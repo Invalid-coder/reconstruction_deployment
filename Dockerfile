@@ -1,5 +1,5 @@
-# Use PyTorch DEVEL base image to get nvcc and CUDA toolkit for compiling extensions
-FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-devel
+# 1. Use the exact PyTorch version requested by install_cu121.sh (2.3.0) with DEVEL to get nvcc
+FROM pytorch/pytorch:2.3.0-cuda12.1-cudnn8-devel
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -7,10 +7,7 @@ ENV PYTHONUNBUFFERED=1
 ENV CUDA_HOME=/usr/local/cuda
 
 # Explicitly set CUDA architectures to prevent "IndexError: list index out of range"
-# This covers most modern GPUs (V100, T4, RTX 30xx/40xx, A100, H100, etc.)
 ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
-
-# Limit parallel build jobs to prevent Out-Of-Memory (OOM) crashes during compilation
 ENV MAX_JOBS=4
 
 # Install system dependencies, Blender requirements, Git, and C++ build tools
@@ -39,11 +36,21 @@ WORKDIR /app
 # Clone the official LAM repository
 RUN git clone https://github.com/aigc3d/LAM.git /app/LAM
 
+# Pre-install fundamental build dependencies needed for Cython/C++ compilation
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel Cython numpy==1.23.0 ninja
+
+# Install PyTorch and xformers exactly as specified in install_cu121.sh
+RUN pip install --no-cache-dir torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu121 \
+    && pip install --no-cache-dir -U xformers==0.0.26.post1 --index-url https://download.pytorch.org/whl/cu121
+
+# Install the rest of the LAM requirements
+RUN pip install --no-cache-dir -r /app/LAM/requirements.txt
+
+# Compile the FaceBoxesV2 extension (crucial step from install_cu121.sh)
+RUN cd /app/LAM/external/landmark_detection/FaceBoxesV2/utils/ && sh make.sh
+
 # Copy your custom LAM service script into the cloned repository
 COPY lam_service.py /app/LAM/lam_service.py
-
-# Install LAM dependencies
-RUN pip install --no-cache-dir -r /app/LAM/requirements.txt
 
 # Install Orchestrator dependencies
 COPY requirements_orch.txt /app/requirements_orch.txt
