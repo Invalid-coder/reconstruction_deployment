@@ -49,11 +49,23 @@ RUN pip install --no-cache-dir --no-build-isolation -r /app/LAM/requirements.txt
 # Compile the FaceBoxesV2 extension (crucial step from install_cu121.sh)
 RUN cd /app/LAM/external/landmark_detection/FaceBoxesV2/utils/ && sh make.sh
 
+WORKDIR /app/LAM
+
+# ==========================================================
+# DOWNLOAD LAM MODELS AND ASSETS (from LAM README)
+# ==========================================================
+# Download assets (including FLAME models) and extract them
+RUN huggingface-cli download 3DAIGC/LAM-assets --local-dir ./tmp \
+    && tar -xf ./tmp/LAM_assets.tar \
+    && rm ./tmp/LAM_assets.tar \
+    && tar -xf ./tmp/thirdparty_models.tar \
+    && rm -rf ./tmp/ \
+    && huggingface-cli download 3DAIGC/LAM-20K --local-dir ./model_zoo/lam_models/releases/lam/lam-20k/step_045500/
+# ==========================================================
+
 # ==========================================================
 # FIX FOR FBX MODULE AND AVATAR EXPORT (from LAM documentation)
 # ==========================================================
-WORKDIR /app/LAM
-
 # Download and install the pre-built FBX SDK Python wheel provided by LAM authors
 RUN wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LAM/fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl \
     && pip install fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl \
