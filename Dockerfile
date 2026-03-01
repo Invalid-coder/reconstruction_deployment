@@ -44,14 +44,36 @@ RUN pip install --no-cache-dir torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.
     && pip install --no-cache-dir -U xformers==0.0.26.post1 --index-url https://download.pytorch.org/whl/cu121
 
 # Install the rest of the LAM requirements WITH --no-build-isolation
-# This forces pip to use our installed PyTorch instead of creating a blank environment
 RUN pip install --no-cache-dir --no-build-isolation -r /app/LAM/requirements.txt
 
 # Compile the FaceBoxesV2 extension (crucial step from install_cu121.sh)
 RUN cd /app/LAM/external/landmark_detection/FaceBoxesV2/utils/ && sh make.sh
 
+# ==========================================================
+# FIX FOR FBX MODULE AND AVATAR EXPORT (from LAM documentation)
+# ==========================================================
+WORKDIR /app/LAM
+
+# Download and install the pre-built FBX SDK Python wheel provided by LAM authors
+RUN wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LAM/fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl \
+    && pip install fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl \
+    && rm fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl
+
+# Install other requirements needed for Avatar Export
+RUN pip install --no-cache-dir pathlib patool
+
+# Download and extract the chatting avatar template files
+RUN wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LAM/sample_oac.tar \
+    && mkdir -p assets/ \
+    && tar -xf sample_oac.tar -C assets/ \
+    && rm sample_oac.tar
+# ==========================================================
+
 # Copy your custom LAM service script into the cloned repository
 COPY lam_service.py /app/LAM/lam_service.py
+
+# Back to main app directory for orchestrator
+WORKDIR /app
 
 # Install Orchestrator dependencies
 COPY requirements_orch.txt /app/requirements_orch.txt
@@ -60,5 +82,5 @@ RUN pip install --no-cache-dir -r /app/requirements_orch.txt
 # Copy the orchestrator service script
 COPY orchestrator_service.py /app/orchestrator_service.py
 
-# Set the default entry point to bash (Docker Compose will override this)
+# Set the default entry point to bash
 CMD ["bash"]
