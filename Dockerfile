@@ -43,8 +43,9 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel Cython numpy==1.23
 RUN pip install --no-cache-dir torch==2.3.0 torchvision==0.18.0 torchaudio==2.3.0 --index-url https://download.pytorch.org/whl/cu121 \
     && pip install --no-cache-dir -U xformers==0.0.26.post1 --index-url https://download.pytorch.org/whl/cu121
 
-# Install the rest of the LAM requirements
-RUN pip install --no-cache-dir -r /app/LAM/requirements.txt
+# Install the rest of the LAM requirements WITH --no-build-isolation
+# This forces pip to use our installed PyTorch instead of creating a blank environment
+RUN pip install --no-cache-dir --no-build-isolation -r /app/LAM/requirements.txt
 
 # Compile the FaceBoxesV2 extension (crucial step from install_cu121.sh)
 RUN cd /app/LAM/external/landmark_detection/FaceBoxesV2/utils/ && sh make.sh
