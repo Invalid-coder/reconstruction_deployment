@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  lam-service:
+    build: .
+    image: lam-orchestrator-base
+    container_name: lam-service
+    working_dir: /app/LAM
+    command: python lam_service.py --blender_path /opt/blender-4.0.2-linux-x64/blender --host 0.0.0.0 --port ${LAM_PORT}
+    env_file: .env
+    ports:
+      - "${LAM_PORT}:${LAM_PORT}"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  orchestrator:
+    build: .
+    image: lam-orchestrator-base
+    container_name: lam-orchestrator
+    working_dir: /app
+    command: python orchestrator_service.py --host 0.0.0.0 --port ${ORCHESTRATOR_PORT}
+    env_file: .env
+    ports:
+      - "${ORCHESTRATOR_PORT}:${ORCHESTRATOR_PORT}"
+    volumes:
+      - orchestrator_storage:/app/orchestrator_storage
+    depends_on:
+      - lam-service
+
+volumes:
+  orchestrator_storage:
