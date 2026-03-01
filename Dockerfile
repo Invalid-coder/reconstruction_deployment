@@ -1,11 +1,12 @@
-# Use PyTorch base image with CUDA support
-FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-runtime
+# Use PyTorch DEVEL base image to get nvcc and CUDA toolkit for compiling extensions
+FROM pytorch/pytorch:2.1.2-cuda12.1-cudnn8-devel
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV CUDA_HOME=/usr/local/cuda
 
-# Install system dependencies, Blender requirements, and Git
+# Install system dependencies, Blender requirements, Git, and C++ build tools
 RUN apt-get update && apt-get install -y \
     wget \
     xz-utils \
@@ -15,6 +16,8 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libglib2.0-0 \
     git \
+    build-essential \
+    ninja-build \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install Blender 4.0.2 (Headless)
