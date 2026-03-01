@@ -6,6 +6,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 ENV CUDA_HOME=/usr/local/cuda
 
+# Explicitly set CUDA architectures to prevent "IndexError: list index out of range"
+# This covers most modern GPUs (V100, T4, RTX 30xx/40xx, A100, H100, etc.)
+ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
+
+# Limit parallel build jobs to prevent Out-Of-Memory (OOM) crashes during compilation
+ENV MAX_JOBS=4
+
 # Install system dependencies, Blender requirements, Git, and C++ build tools
 RUN apt-get update && apt-get install -y \
     wget \

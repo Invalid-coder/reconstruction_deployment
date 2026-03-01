@@ -91,6 +91,13 @@ docker-compose logs -f orchestrator
 docker-compose logs -f lam-service
 ```
 
+Or another option:
+
+```text
+docker-compose build --no-cache
+docker-compose up -d
+```
+
 # 📡 API Usage & Endpoints
 You will interact primarily with the Orchestrator Service running on port 9000. All requests must include the x-api-key header matching your .env file.
 
