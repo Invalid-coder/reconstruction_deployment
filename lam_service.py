@@ -123,9 +123,7 @@ class AvatarReconstructor:
                 render_c2ws=motion_seq["render_c2ws"].to(device),
                 render_intrs=motion_seq["render_intrs"].to(device),
                 render_bg_colors=motion_seq["render_bg_colors"].to(device),
-                flame_params={k: v.to(device) for k, v in motion_seq["flame_params"].items()},
-                #image_name=image_name,
-                #output_dir="output"
+                flame_params={k: v.to(device) for k, v in motion_seq["flame_params"].items()}
             )
 
         # Generate OAC export
