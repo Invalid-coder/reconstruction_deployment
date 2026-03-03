@@ -11,6 +11,7 @@ ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
 ENV MAX_JOBS=4
 
 # Install system dependencies, Blender requirements, Git, and C++ build tools
+# ADDED libxkbcommon-x11-0, libxkbcommon0, and libsm6 for Blender 4.0
 RUN apt-get update && apt-get install -y \
     wget \
     xz-utils \
@@ -22,6 +23,9 @@ RUN apt-get update && apt-get install -y \
     git \
     build-essential \
     ninja-build \
+    libxkbcommon-x11-0 \
+    libxkbcommon0 \
+    libsm6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install Blender 4.0.2 (Headless)
