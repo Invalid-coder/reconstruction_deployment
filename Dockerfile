@@ -11,7 +11,6 @@ ENV TORCH_CUDA_ARCH_LIST="7.0;7.5;8.0;8.6;8.9;9.0+PTX"
 ENV MAX_JOBS=4
 
 # Install system dependencies, Blender requirements, Git, and C++ build tools
-# ADDED libxkbcommon-x11-0, libxkbcommon0, and libsm6 for Blender 4.0
 RUN apt-get update && apt-get install -y \
     wget \
     xz-utils \
@@ -68,9 +67,8 @@ RUN huggingface-cli download 3DAIGC/LAM-assets --local-dir ./tmp \
 # ==========================================================
 
 # ==========================================================
-# FIX FOR FBX MODULE AND AVATAR EXPORT (from LAM documentation)
-# ==========================================================
 # Download and install the pre-built FBX SDK Python wheel provided by LAM authors
+# ==========================================================
 RUN wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/data/LAM/fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl \
     && pip install fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl \
     && rm fbx-2020.3.4-cp310-cp310-manylinux1_x86_64.whl
@@ -85,7 +83,7 @@ RUN wget https://virutalbuy-public.oss-cn-hangzhou.aliyuncs.com/share/aigc3d/dat
     && rm sample_oac.tar
 # ==========================================================
 
-# Copy your custom LAM service script into the cloned repository
+# Copy custom LAM service script into the cloned repository
 COPY lam_service.py /app/LAM/lam_service.py
 
 # Back to main app directory for orchestrator
