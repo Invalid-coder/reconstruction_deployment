@@ -6,10 +6,12 @@ services:
     image: lam-orchestrator-base
     container_name: lam-service
     working_dir: /app/LAM
-    command: python lam_service.py --blender_path /opt/blender-4.0.2-linux-x64/blender --host 0.0.0.0 --port ${LAM_PORT}
+    # Removed --host and --port here to prevent the argparse collision
+    command: python lam_service.py --blender_path /opt/blender-4.0.2-linux-x64/blender
     env_file: .env
     ports:
-      - "${LAM_PORT}:${LAM_PORT}"
+      # Maps your .env port to the internal default port of 8000
+      - "${LAM_PORT}:8000"
     deploy:
       resources:
         reservations:
